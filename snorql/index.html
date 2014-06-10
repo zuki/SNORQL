@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
   <head>
     <title>Snorql: A SPARQL Explorer</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <script type="text/javascript" src="prototype.js"></script>
     <script type="text/javascript" src="scriptaculous/scriptaculous.js"></script>
     <script type="text/javascript" src="sparql.js"></script>
@@ -14,58 +15,67 @@
   <body class="snorql" onload="snorql.start()">
     <div id="header">
       <h1 id="title">Snorql: A SPARQL Explorer</h1>
+  
+      <h2 class="text-center">エンドポイント: 
+        <select id="selectendpoint" onchange="snorql.setEPField()">
+          <option value="8000">BIBFRAME</option>
+          <option selected="selected" value="8001">NDLSH</option>
+          <option value="8002">RDA</option>
+        </select>
+      </h2>
     </div>
 
     <div class="section" style="float: right; width: 8em">
-      <h2>Browse:</h2>
+      <h2>ブラウズ:</h2>
       <ul>
-        <li><a class="graph-link" href="?browse=superclasses">Super Classes</a></li>
-        <li><a class="graph-link" href="?browse=classes">Classes</a></li>
-        <li><a class="graph-link" href="?browse=properties">Properties</a></li>
-        <li id="browse-named-graphs-link"><a href="?browse=graphs">Named Graphs</a></li>
+        <li><a class="graph-link" href="?browse=superclasses">スーパークラス</a></li>
+        <li><a class="graph-link" href="?browse=classes">クラス</a></li>
+        <li><a class="graph-link" href="?browse=properties">プロパティ</a></li>
+        <li id="browse-named-graphs-link"><a href="?browse=graphs">名前付きグラフ</a></li>
       </ul>
     </div>
 
     <div id="default-graph-section" class="section" style="margin-right: 12em">
-      <h2 style="display: inline">GRAPH:</h2>
+      <h2 style="display: inline">グラフ:</h2>
       <p style="display: inline">
         Default graph.
-        <a href="?browse=graphs">List named graphs</a>
+        <a href="?browse=graphs">名前付きグラフ一覧</a>
       </p>
     </div>
 
     <div id="named-graph-section" class="section" style="margin-right: 12em">
-      <h2 style="display: inline">GRAPH:</h2>
+      <h2 style="display: inline">グラフ:</h2>
       <p style="display: inline">
-        <span id="selected-named-graph">Named graph goes here</span>.
-        <a href="javascript:snorql.switchToDefaultGraph()">Switch back to default graph</a>
+        <span id="selected-named-graph">名前付きグラフ</span>.
+        <a href="javascript:snorql.switchToDefaultGraph()">デフォルトグラフに戻る</a>
       </p>
     </div>
 
     <div class="section" style="margin-right: 12em">
       <h2>SPARQL:</h2>
       <pre id="prefixestext"></pre>
-      <form id="queryform" action="#" method="get"><div>
+      <form id="queryform" action="#" method="get" accept-charset="utf-8"><div>
         <input type="hidden" name="query" value="" id="query" />
+        <input type="hidden" name="ep" value="" id="ep" />
         <input type="hidden" name="output" value="json" id="jsonoutput" disabled="disabled" />
         <input type="hidden" name="stylesheet" value="" id="stylesheet" disabled="disabled" />
         <input type="hidden" name="graph" value="" id="graph-uri" disabled="disabled" />
       </div></form>
       <div>
         <textarea name="query" rows="9" cols="80" id="querytext"></textarea>
-        Results:
+        検索結果:
         <select id="selectoutput" onchange="snorql.updateOutputMode()">
-          <option selected="selected" value="browse">Browse</option>
-          <option value="json">as JSON</option>
-          <option value="xml">as XML</option>
-          <option value="xslt">as XML+XSLT</option>
+          <option selected="selected" value="browse">ブラウズ</option>
+          <option value="json">JSON出力</option>
+          <option value="xml">XML出力</option>
+          <option value="xslt">XSLT変換出力</option>
         </select>
         <span id="xsltcontainer"><span id="xsltinput">
-          XSLT stylesheet URL:
+          XSLTスタイルシートURL:
           <input id="xsltstylesheet" type="text" value="snorql/xml-to-html.xsl" size="30" />
         </span></span>
-        <input type="button" value="Go!" onclick="snorql.submitQuery()" />
-        <input type="button" value="Reset" onclick="snorql.resetQuery()" />
+        <input type="button" value="検索" onclick="snorql.submitQuery()" />
+        <input type="button" value="リセット" onclick="snorql.resetQuery()" />
       </div>
     </div>
 

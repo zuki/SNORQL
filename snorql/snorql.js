@@ -10,10 +10,10 @@ String.prototype.startsWith = function(str) {
 
 function Snorql() {
     // modify this._endpoint to point to your SPARQL endpoint
-    this._endpoint = document.location.href.match(/^([^?]*)snorql\//)[1] + 'sparql';
+    this._endpoint = null;
     // modify these to your likeing
-    this._poweredByLink = 'http://www4.wiwiss.fu-berlin.de/bizer/d2r-server/';
-    this._poweredByLabel = 'D2R Server';
+    this._poweredByLink = 'http://4store.org/';
+    this._poweredByLabel = '4store';
     this._enableNamedGraphs = false;
 
     this._browserBase = null;
@@ -24,7 +24,6 @@ function Snorql() {
     this.start = function() {
         // TODO: Extract a QueryType class
         this.setBrowserBase(document.location.href.replace(/\?.*/, ''));
-        this._displayEndpointURL();
         this._displayPoweredBy();
         this.setNamespaces(D2R_namespacePrefixes);
         this.updateOutputMode();
@@ -34,7 +33,20 @@ function Snorql() {
             document.getElementById('querytext').value = 'SELECT DISTINCT * WHERE {\n  ?s ?p ?o\n}\nLIMIT 10';
             this._updateGraph(null, false);
             return;
+        } else {
+            var port = '8001';
+            var matchEP = queryString.match(/&ep=(.*)/);
+            if (matchEP) {
+                port = matchEP[1] ? matchEP[1] : '8001';
+                queryString = queryString.substring(0, matchEP.index);
+            }
+            this._setEndpoint(port);
+            this._displayEndpointURL();
+            document.getElementById('selectendpoint').value = port;
+            document.getElementById('ep').value = port;            
+            this._setBrowseURL();            
         }
+
         var graph = queryString.match(/graph=([^&]*)/);
         graph = graph ? decodeURIComponent(graph[1]) : null;
         this._updateGraph(graph, false);
@@ -57,7 +69,7 @@ function Snorql() {
             var resultTitle = 'List of all properties:';
             var query = 'SELECT DISTINCT ?property\n' +
                     'WHERE { [] ?property [] }\n' +
-                    'ORDER BY ?property';
+                    'ORDER BY ?property';    
         }
         if (browse && browse[1] == 'graphs') {
             var resultTitle = 'List of all named graphs:';
@@ -102,6 +114,7 @@ function Snorql() {
         if (!querytext) {
             querytext = query;
         }
+
         document.getElementById('querytext').value = querytext;
         this.displayBusyMessage();
         var service = new SPARQL.Service(this._endpoint);
@@ -214,6 +227,29 @@ function Snorql() {
         $('graph-uri').value = this._graph;
     }
 
+    this._setEndpoint = function(port) {
+        this._endpoint = this._getEndpointURI(port);
+    }
+
+    this.setEPField = function() {
+        document.getElementById('ep').value = this._getSelectedPort();
+        this._setBrowseURL();
+    } 
+
+    this._setBrowseURL = function() {
+        var port = document.getElementById('ep').value;
+        var elements = document.querySelectorAll('div.section>ul>li>a');
+        for (var i = 0; i<elements.length; i++) {
+            var url = elements[i].getAttribute("href");
+            url = url.replace(/&ep=.*/, '') + '&ep=' + port;
+            elements[i].setAttribute('href', url);
+        };
+    }
+
+    this._getEndpointURI = function(port) {
+        return 'http://localhost:' + port + '/sparql/';
+    }
+
     this.updateOutputMode = function() {
         if (this._xsltDOM == null) {
             this._xsltDOM = document.getElementById('xsltinput');
@@ -236,6 +272,7 @@ function Snorql() {
         if (mode == 'browse') {
             document.getElementById('queryform').action = this._browserBase;
             document.getElementById('query').value = document.getElementById('querytext').value;
+
         } else {
             document.getElementById('query').value = this._getPrefixes() + document.getElementById('querytext').value;
             document.getElementById('queryform').action = this._endpoint;
@@ -313,6 +350,10 @@ function Snorql() {
         if (node == null) return;
         where.appendChild(node);
     }
+
+    this._getSelectedPort = function() {
+        return document.getElementById('selectendpoint').value;
+    }   
 
     this._selectedOutputMode = function() {
         return document.getElementById('selectoutput').value;
@@ -449,7 +490,7 @@ function SPARQLResultFormatter(json, namespaces) {
         var span = document.createElement('span');
         span.className = 'uri';
         var a = document.createElement('a');
-        a.href = this._getLinkMaker(varName)(node.value);
+        a.href = this._getLinkMaker(varName)(node.value) + this._getPort();
         a.title = '<' + node.value + '>';
         a.className = 'graph-link';
         var qname = this._toQName(node.value);
@@ -539,4 +580,8 @@ function SPARQLResultFormatter(json, namespaces) {
         'short', 'byte', 'integer', 'nonPositiveInteger', 'negativeInteger',
         'nonNegativeInteger', 'positiveInteger', 'unsignedLong',
         'unsignedInt', 'unsignedShort', 'unsignedByte'];
+
+    this._getPort = function() {
+        return '&ep=' + document.getElementById('ep').value;
+    }
 }
