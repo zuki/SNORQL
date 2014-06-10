@@ -328,7 +328,7 @@ function Snorql() {
     }
 
     this._betterUnescape = function(s) {
-        return unescape(s.replace(/\+/g, ' '));
+        return decodeURIComponent(s.replace(/\+/g, ' '));
     }
 }
 
